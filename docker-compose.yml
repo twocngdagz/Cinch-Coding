@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+  catalog:
+    build:
+      context: ./catalog
+      dockerfile: Dockerfile
+    container_name: catalog_service
+    volumes:
+      - ./catalog:/var/www/catalog
+    ports:
+      - "8001:8000"
+    networks:
+      - cinch
+    depends_on:
+      - catalog_db
+
+  checkout:
+    build:
+      context: ./checkout
+      dockerfile: Dockerfile
+    container_name: checkout_service
+    volumes:
+      - ./checkout:/var/www/checkout
+    ports:
+      - "8002:8000"
+    networks:
+      - cinch
+    depends_on:
+      - checkout_db
+      - catalog
+
+  email:
+    build:
+      context: ./email
+      dockerfile: Dockerfile
+    container_name: email_service
+    volumes:
+      - ./email:/var/www/email
+    ports:
+      - "8003:8000"
+    networks:
+      - cinch
+    depends_on:
+      - email_db
+
+  catalog_db:
+    image: mysql:8.0
+    container_name: catalog_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cinch_catalog
+    ports:
+      - "3307:3306"
+    networks:
+      - cinch
+
+  checkout_db:
+    image: mysql:8.0
+    container_name: checkout_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cinch_checkout
+    ports:
+      - "3308:3306"
+    networks:
+      - cinch
+
+  email_db:
+    image: mysql:8.0
+    container_name: email_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cinch_email
+    ports:
+      - "3309:3306"
+    networks:
+      - cinch
+
+networks:
+  cinch:
+    driver: bridge
