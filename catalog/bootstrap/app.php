@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RequestIdMiddleware;
 use App\Http\Middleware\VerifyHmacSignature;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,10 +20,14 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(RequestIdMiddleware::class);
+
         $middleware->alias([
             'hmac' => VerifyHmacSignature::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->context(fn () => [
+            'request_id' => request()->attributes->get('request_id'),
+        ]);
     })->create();
