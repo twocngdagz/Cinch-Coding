@@ -90,4 +90,3 @@ test('get products returns multiple products', function () {
     $response->assertStatus(200)
         ->assertJsonCount(5, 'data');
 });
-

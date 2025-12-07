@@ -8,17 +8,17 @@ use RectorLaravel\Set\LaravelSetList;
 
 return RectorConfig::configure()
     ->withPaths([
-        __DIR__ . '/app',
-        __DIR__ . '/config',
-        __DIR__ . '/database',
-        __DIR__ . '/routes',
-        __DIR__ . '/tests',
+        __DIR__.'/app',
+        __DIR__.'/config',
+        __DIR__.'/database',
+        __DIR__.'/routes',
+        __DIR__.'/tests',
     ])
     ->withSkip([
-        __DIR__ . '/vendor',
+        __DIR__.'/vendor',
     ])
     ->withSets([
         LaravelLevelSetList::UP_TO_LARAVEL_120,
         LaravelSetList::LARAVEL_CODE_QUALITY,
-        LaravelSetList::LARAVEL_COLLECTION
+        LaravelSetList::LARAVEL_COLLECTION,
     ]);

@@ -51,4 +51,3 @@ final class InternalProductController
         return new ProductResource(Product::with('variants')->findOrFail($id));
     }
 }
-

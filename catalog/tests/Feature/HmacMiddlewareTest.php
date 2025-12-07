@@ -14,7 +14,7 @@ function computeHmacSignature(
 ): string {
     $payload = implode("\n", [
         strtoupper($method),
-        '/' . ltrim($path, '/'),
+        '/'.ltrim($path, '/'),
         $body,
         $serviceId,
         $timestamp,
@@ -175,4 +175,3 @@ test('request with all headers missing fails with 401', function () {
             'message' => 'Missing required authentication headers.',
         ]);
 });
-

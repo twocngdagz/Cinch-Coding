@@ -5,6 +5,9 @@ namespace Database\Factories;
 use App\Models\Variant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Variant>
+ */
 class VariantFactory extends Factory
 {
     protected $model = Variant::class;
@@ -26,4 +29,3 @@ class VariantFactory extends Factory
         ];
     }
 }
-

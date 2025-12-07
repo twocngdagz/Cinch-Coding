@@ -14,7 +14,7 @@ function generateHmacHeaders(string $method, string $path, string $body = '[]'):
 
     $payload = implode("\n", [
         strtoupper($method),
-        '/' . ltrim($path, '/'),
+        '/'.ltrim($path, '/'),
         $body,
         $serviceId,
         $timestamp,
@@ -105,7 +105,6 @@ test('get product data returns full product data', function () {
     $response = $this->withHeaders($headers)
         ->getJson($path);
 
-
     $response->assertStatus(200)
         ->assertJsonStructure([
             'data' => [
@@ -138,4 +137,3 @@ test('get product data returns 404 for non-existent product', function () {
 
     $response->assertStatus(404);
 });
-

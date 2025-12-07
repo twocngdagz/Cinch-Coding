@@ -17,4 +17,3 @@ class VariantSeeder extends Seeder
         });
     }
 }
-

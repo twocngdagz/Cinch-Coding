@@ -18,4 +18,3 @@ class ProductController
         return new ProductResource(Product::with('variants')->findOrFail($id));
     }
 }
-

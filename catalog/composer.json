@@ -38,6 +38,13 @@
         }
     },
     "scripts": {
+        "check": [
+            "pest",
+            "php artisan test",
+            "phpstan analyse",
+            "rector process --dry-run",
+            "pint"
+        ],
         "setup": [
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",

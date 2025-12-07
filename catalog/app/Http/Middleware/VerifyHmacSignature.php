@@ -51,7 +51,6 @@ final class VerifyHmacSignature
             && $signature !== '';
     }
 
-
     private function isAllowedServiceId(string $serviceId): bool
     {
         /** @var array<int, string> $allowedServiceIds */
@@ -96,7 +95,6 @@ final class VerifyHmacSignature
         return hash_equals($expectedSignature, $signature);
     }
 
-
     private function computeSignature(
         string $method,
         string $path,
@@ -107,7 +105,7 @@ final class VerifyHmacSignature
     ): string {
         $payload = implode("\n", [
             strtoupper($method),
-            '/' . ltrim($path, '/'),
+            '/'.ltrim($path, '/'),
             $body,
             $serviceId,
             $timestamp,
@@ -124,4 +122,3 @@ final class VerifyHmacSignature
         ], Response::HTTP_UNAUTHORIZED);
     }
 }
-
