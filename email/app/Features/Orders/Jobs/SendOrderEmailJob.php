@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 final class SendOrderEmailJob implements ShouldQueue
@@ -26,24 +27,43 @@ final class SendOrderEmailJob implements ShouldQueue
 
     public float $totalAmount;
 
+    public string $requestId;
+
     /**
      * @param  array<string, mixed>  $orderPayload
      */
-    public function __construct(array $orderPayload)
+    public function __construct(array $orderPayload, string $requestId)
     {
         $this->email = $orderPayload['email'];
         $this->items = $orderPayload['items'];
         $this->totalAmount = (float) $orderPayload['total_amount'];
+        $this->requestId = $requestId;
     }
 
     public function handle(): void
     {
+        Log::channel('internal')->info('job_processing', [
+            'request_id' => $this->requestId,
+            'job' => 'SendOrderEmailJob',
+            'recipient_email' => $this->email,
+            'total_amount' => $this->totalAmount,
+            'items_count' => count($this->items),
+        ]);
+
         Mail::to($this->email)->send(
             new OrderSummaryMail(
                 email: $this->email,
                 items: $this->items,
                 totalAmount: $this->totalAmount,
+                requestId: $this->requestId,
             )
         );
+
+        Log::channel('internal')->info('email_delivered', [
+            'request_id' => $this->requestId,
+            'job' => 'SendOrderEmailJob',
+            'recipient_email' => $this->email,
+            'status' => 'delivered',
+        ]);
     }
 }

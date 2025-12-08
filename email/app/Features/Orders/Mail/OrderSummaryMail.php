@@ -19,6 +19,7 @@ final class OrderSummaryMail extends Mailable
         public string $email,
         public array $items,
         public float $totalAmount,
+        public string $requestId,
     ) {}
 
     public function envelope(): Envelope
