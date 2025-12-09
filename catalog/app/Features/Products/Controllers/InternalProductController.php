@@ -7,8 +7,10 @@ namespace App\Features\Products\Controllers;
 use App\Features\Products\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\Variant;
+use App\Support\RequestContext;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Log;
 
 final class InternalProductController
 {
@@ -16,6 +18,17 @@ final class InternalProductController
     {
         $productIds = $request->input('product_ids', []);
         $variantIds = $request->input('variant_ids', []);
+        $requestId = RequestContext::getRequestId();
+
+        Log::channel('internal')->info('', [
+            'event' => 'internal_validation_request',
+            'request_id' => $requestId,
+            'service' => 'catalog',
+            'endpoint' => $request->path(),
+            'extra' => [
+                'items_count' => count($productIds) + count($variantIds),
+            ],
+        ]);
 
         $productsFromProductIds = [];
         $productsFromVariantIds = [];
@@ -42,6 +55,16 @@ final class InternalProductController
         $products = collect([...$productsFromProductIds, ...$productsFromVariantIds])
             ->unique('id')
             ->values();
+
+        Log::channel('internal')->info('', [
+            'event' => 'internal_validation_success',
+            'request_id' => $requestId,
+            'service' => 'catalog',
+            'endpoint' => $request->path(),
+            'extra' => [
+                'validated_items' => $products->count(),
+            ],
+        ]);
 
         return ProductResource::collection($products);
     }

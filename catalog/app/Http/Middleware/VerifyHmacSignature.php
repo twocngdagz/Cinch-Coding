@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 final class VerifyHmacSignature
@@ -37,6 +38,9 @@ final class VerifyHmacSignature
         if (! $this->isSignatureValid($request, (string) $serviceId, (string) $timestamp, (string) $signature)) {
             return $this->unauthorizedResponse('Invalid signature.');
         }
+
+        $requestId = $request->header('x-request-id');
+        $request->attributes->set('request_id', is_string($requestId) && $requestId !== '' ? $requestId : (string) Str::uuid());
 
         return $next($request);
     }
