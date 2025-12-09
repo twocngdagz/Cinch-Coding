@@ -1,3 +1,4 @@
+#!/bin/sh
 php artisan config:clear
 php artisan config:cache
 supervisord -c /etc/supervisor/conf.d/supervisord.conf &
