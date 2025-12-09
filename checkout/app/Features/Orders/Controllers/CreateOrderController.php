@@ -7,14 +7,18 @@ namespace App\Features\Orders\Controllers;
 use App\Features\Orders\Actions\ValidateOrderAction;
 use App\Features\Orders\Requests\ValidateOrderRequest;
 use App\Models\Order;
+use App\Services\InternalHttpClient;
 use App\Support\RequestContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 final class CreateOrderController
 {
-    public function __invoke(ValidateOrderRequest $request, ValidateOrderAction $action): JsonResponse
-    {
+    public function __invoke(
+        ValidateOrderRequest $request,
+        ValidateOrderAction $action,
+        InternalHttpClient $emailClient
+    ): JsonResponse {
         $requestId = RequestContext::getRequestId();
 
         Log::channel('internal')->info('', [
@@ -49,6 +53,8 @@ final class CreateOrderController
                 'total_amount' => $totalAmount,
             ],
         ]);
+
+        $emailClient->sendEmailNotification('/internal/orders/receive', $order->id);
 
         return response()->json($order, 201);
     }

@@ -45,6 +45,7 @@ it('creates an order successfully with valid data', function (): void {
                 ],
             ],
         ]),
+        '*/internal/orders/receive' => Http::response([], 202),
     ]);
 
     $response = $this->postJson('/api/orders', [
@@ -60,26 +61,26 @@ it('creates an order successfully with valid data', function (): void {
     $this->assertDatabaseCount('orders', 1);
 
     $order = Order::first();
-    expect($order->email)->toBe('customer@example.com');
-    expect($order->items)->toBeArray();
-    expect($order->items)->toHaveCount(2);
-    expect($order->items[0])->toMatchArray([
-        'product_id' => 1,
-        'variant_id' => 10,
-        'quantity' => 2,
-        'price' => 1500,
-        'name' => 'Test Product',
-        'sku' => 'TP-001',
-    ]);
-    expect($order->items[1])->toMatchArray([
-        'product_id' => 2,
-        'variant_id' => 20,
-        'quantity' => 1,
-        'price' => 2500,
-        'name' => 'Another Product',
-        'sku' => 'AP-001',
-    ]);
-    expect((int) $order->total_amount)->toBe(5500);
+    expect($order->email)->toBe('customer@example.com')
+        ->and($order->items)->toBeArray()
+        ->and($order->items)->toHaveCount(2)
+        ->and($order->items[0])->toMatchArray([
+            'product_id' => 1,
+            'variant_id' => 10,
+            'quantity' => 2,
+            'price' => 1500,
+            'name' => 'Test Product',
+            'sku' => 'TP-001',
+        ])
+        ->and($order->items[1])->toMatchArray([
+            'product_id' => 2,
+            'variant_id' => 20,
+            'quantity' => 1,
+            'price' => 2500,
+            'name' => 'Another Product',
+            'sku' => 'AP-001',
+        ])
+        ->and((int)$order->total_amount)->toBe(5500);
 
     $response->assertJsonStructure([
         'id',
