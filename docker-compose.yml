@@ -77,6 +77,13 @@ services:
     networks:
       - cinch
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "8025:8025"
+    networks:
+      - cinch
 networks:
   cinch:
     driver: bridge
