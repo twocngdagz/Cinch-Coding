@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Support\RequestContext;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 final class InternalHttpClient
 {
@@ -37,12 +39,55 @@ final class InternalHttpClient
     {
         $url = $this->buildUrl($path);
         $body = $data !== [] ? json_encode($data, JSON_THROW_ON_ERROR) : '';
+        $requestId = RequestContext::getRequestId();
+
+        $this->logOutgoingRequest($path, $data, $requestId);
 
         $response = $this->createRequest('POST', $path, $body)
             ->withBody($body, 'application/json')
             ->post($url);
 
-        return $this->handleResponse($response);
+        $result = $this->handleResponse($response);
+
+        $this->logSuccessResponse($path, $result, $requestId);
+
+        return $result;
+    }
+
+    public function sendEmailNotification(string $path, int $orderId): void
+    {
+        $url = $this->buildUrl($path);
+        $data = ['order_id' => $orderId];
+        $body = json_encode($data, JSON_THROW_ON_ERROR);
+        $requestId = RequestContext::getRequestId();
+
+        Log::channel('internal')->info('', [
+            'event' => 'email_notification_request',
+            'request_id' => $requestId,
+            'service' => 'checkout',
+            'endpoint' => $path,
+            'extra' => [
+                'order_id' => $orderId,
+            ],
+        ]);
+
+        $response = $this->createRequest('POST', $path, $body)
+            ->withBody($body, 'application/json')
+            ->post($url);
+
+        $response->throw();
+
+        if ($response->status() === 202) {
+            Log::channel('internal')->info('', [
+                'event' => 'email_notification_acknowledged',
+                'request_id' => $requestId,
+                'service' => 'checkout',
+                'endpoint' => $path,
+                'extra' => [
+                    'order_id' => $orderId,
+                ],
+            ]);
+        }
     }
 
     private function buildUrl(string $path, array $query = []): string
@@ -100,5 +145,35 @@ final class InternalHttpClient
         $response->throw();
 
         return $response->json();
+    }
+
+    private function logOutgoingRequest(string $path, array $data, string $requestId): void
+    {
+        if (str_contains($path, '/internal/products/validate')) {
+            Log::channel('internal')->info('', [
+                'event' => 'catalog_validation_call',
+                'request_id' => $requestId,
+                'service' => 'checkout',
+                'endpoint' => $path,
+                'extra' => [
+                    'items_count' => count($data['items'] ?? []),
+                ],
+            ]);
+        }
+    }
+
+    private function logSuccessResponse(string $path, mixed $result, string $requestId): void
+    {
+        if (str_contains($path, '/internal/products/validate') && is_array($result)) {
+            Log::channel('internal')->info('', [
+                'event' => 'catalog_validation_success',
+                'request_id' => $requestId,
+                'service' => 'checkout',
+                'endpoint' => $path,
+                'extra' => [
+                    'validated_items' => count($result['items'] ?? []),
+                ],
+            ]);
+        }
     }
 }
