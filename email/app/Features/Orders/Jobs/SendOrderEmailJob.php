@@ -50,20 +50,27 @@ final class SendOrderEmailJob implements ShouldQueue
             'items_count' => count($this->items),
         ]);
 
-        Mail::to($this->email)->send(
-            new OrderSummaryMail(
-                email: $this->email,
-                items: $this->items,
-                totalAmount: $this->totalAmount,
-                requestId: $this->requestId,
-            )
-        );
-
-        Log::channel('internal')->info('email_delivered', [
-            'request_id' => $this->requestId,
-            'job' => 'SendOrderEmailJob',
-            'recipient_email' => $this->email,
-            'status' => 'delivered',
-        ]);
+        try {
+            Mail::to($this->email)->send(
+                new OrderSummaryMail(
+                    email: $this->email,
+                    items: $this->items,
+                    totalAmount: $this->totalAmount,
+                    requestId: $this->requestId,
+                )
+            );
+            Log::channel('internal')->info('email_delivered', [
+                'request_id' => $this->requestId,
+                'job' => 'SendOrderEmailJob',
+                'recipient_email' => $this->email,
+                'status' => 'delivered',
+            ]);
+        } catch (\Throwable $e) {
+            Log::channel('internal')->error('email_send_failed', [
+                'request_id' => $this->requestId,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
     }
 }
