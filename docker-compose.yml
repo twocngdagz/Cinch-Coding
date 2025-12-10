@@ -44,6 +44,20 @@ services:
     depends_on:
       - email_db
 
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "8000:80"
+    environment:
+      VITE_CATALOG_URL: http://catalog:8001/api
+      VITE_CHECKOUT_URL: http://checkout:8002/api
+    depends_on:
+      - catalog
+      - checkout
+    networks:
+      - cinch
+
   catalog_db:
     image: mysql:8.0
     container_name: catalog_db
