@@ -14,7 +14,7 @@
           <div class="mt-4 flex justify-between">
             <div>
               <h3 class="text-sm text-fg">
-                <router-link :to="`/product/${product.id}`">
+                <router-link :to="`/products/${product.id}`">
                   <span aria-hidden="true" class="absolute inset-0"></span>
                   {{ product.title }}
                 </router-link>
