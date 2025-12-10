@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useCart } from '../stores/cart'
 
 const route = useRoute()
+const router = useRouter()
 const product = ref<any>(null)
 const loading = ref(true)
 const error = ref('')
@@ -14,6 +16,8 @@ const sizes = ref<string[]>([])
 const colors = ref<string[]>([])
 const filteredVariants = ref<any[]>([])
 const selectedVariant = ref<any>(null)
+
+const cart = useCart()
 
 function updateOptions() {
   if (!product.value?.data?.variants) return
@@ -44,6 +48,22 @@ function onSelectSize(size: string) {
 function onSelectColor(color: string) {
   selectedColor.value = color
   updateFilteredVariants()
+}
+
+function add() {
+  let price = selectedVariant.value?.price ?? product.value.data.variants?.[0]?.price ?? 0;
+  price = typeof price === 'string' ? parseFloat(price) : price;
+  if (isNaN(price)) price = 0;
+  cart.addToCart({
+    id: product.value.data.id,
+    name: product.value.data.title,
+    price,
+    quantity: 1,
+    image: product.value.data.images?.[0] ?? '',
+    color: selectedColor.value || undefined,
+    size: selectedSize.value || undefined
+  })
+  router.push('/cart')
 }
 
 onMounted(async () => {
@@ -122,10 +142,9 @@ onMounted(async () => {
           </div>
         </div>
         <button
-          type="button"
-          class="mt-4 w-full py-3 rounded-m bg-bg-emphasis text-base font-semibold text-fg shadow hover:bg-bg/80 focus-visible:outline focus-visible:outline-border"
-        >
-          Add to Cart
+          @click="add"
+          class="mt-8 flex w-full items-center justify-center rounded-md bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700">
+          Add to cart
         </button>
         <div class="mt-6 border-t border-border/50 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="bg-bg-muted rounded-s p-4 border border-border/50 text-sm text-fg/80">
