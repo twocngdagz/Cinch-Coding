@@ -53,9 +53,12 @@ function onSelectColor(color: string) {
 function add() {
   let price = selectedVariant.value?.price ?? product.value.data.variants?.[0]?.price ?? 0;
   price = typeof price === 'string' ? parseFloat(price) : price;
+  const variantId = selectedVariant.value?.id ?? product.value.data.variants?.[0]?.id
+  if (!variantId) return
   if (isNaN(price)) price = 0;
   cart.addToCart({
-    id: product.value.data.id,
+    productId: product.value.data.id,
+    variantId,
     name: product.value.data.title,
     price,
     quantity: 1,

@@ -10,7 +10,7 @@
           <ul role="list" class="divide-y divide-gray-200 border-t border-b border-gray-200">
             <li
               v-for="item in cart.items.value"
-              :key="item.id"
+              :key="item.productId"
               class="flex py-6 sm:py-10"
             >
               <div class="shrink-0">
@@ -39,7 +39,7 @@
                     <div class="grid w-full max-w-16 grid-cols-1">
                       <select
                         :value="item.quantity"
-                        @change="update(item.id, Number(($event.target as HTMLSelectElement).value))"
+                        @change="update(item.productId, Number(($event.target as HTMLSelectElement).value))"
                         class="col-start-1 row-start-1 appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                       >
                         <option v-for="n in 8" :key="n" :value="n">{{ n }}</option>
@@ -49,7 +49,7 @@
                     <div class="absolute top-0 right-0">
                       <button
                         type="button"
-                        @click="cart.removeFromCart(item.id)"
+                        @click="cart.removeFromCart(item.productId)"
                         class="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500"
                       >
                         <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
@@ -97,14 +97,26 @@
             </div>
           </dl>
 
-          <div class="mt-6">
-            <button
-              type="button"
-              class="w-full rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
-            >
-              Checkout
-            </button>
-          </div>
+            <div class="mt-6">
+              <label class="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                v-model="email"
+                type="email"
+                class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+                placeholder="you@example.com"
+              />
+              <p v-if="error" class="mt-2 text-sm text-red-600">{{ error }}</p>
+
+              <button
+                type="button"
+                :disabled="submitting"
+                @click="placeOrder"
+                class="mt-4 w-full rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {{ submitting ? 'Placing order...' : 'Checkout' }}
+              </button>
+            </div>
+
         </section>
       </form>
     </div>
@@ -113,7 +125,58 @@
 
 <script setup lang="ts">
 import { useCart } from '../stores/cart'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
 const cart = useCart()
+const router = useRouter()
+
+const email = ref('')
+const submitting = ref(false)
+const error = ref('')
+
+async function placeOrder() {
+    error.value = ''
+    if (!email.value) {
+        error.value = 'Email is required.'
+        return
+    }
+    if (cart.items.value.length === 0) {
+        error.value = 'Cart is empty.'
+        return
+    }
+
+    submitting.value = true
+    try {
+        const payload = {
+            email: email.value,
+            items: cart.items.value.map(i => ({
+                product_id: i.productId,
+                variant_id: i.variantId,
+                quantity: i.quantity,
+            })),
+        }
+
+        const res = await fetch(`${import.meta.env.VITE_CHECKOUT_URL}/orders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        })
+
+        if (!res.ok) {
+            const data = await res.json().catch(() => null)
+            throw new Error(data?.message || 'Checkout failed')
+        }
+
+        cart.clear()
+        router.push('/')
+    } catch (e: any) {
+        error.value = e?.message || 'Checkout failed'
+    } finally {
+        submitting.value = false
+    }
+}
+
 
 function update(id: number, qty: number) {
   cart.updateQuantity(id, Number(qty))
