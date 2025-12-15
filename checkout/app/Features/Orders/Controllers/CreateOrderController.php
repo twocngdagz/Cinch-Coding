@@ -33,13 +33,17 @@ final class CreateOrderController
         ]);
 
         $validated = $action->execute($request);
-        $totalAmount = 0;
-        foreach ($validated['items'] as $item) {
-            $totalAmount += $item['price'] * $item['quantity'];
+
+        /** @var array<int, array<string, mixed>> $items */
+        $items = $validated['items'] ?? [];
+
+        $totalAmount = 0.0;
+        foreach ($items as $item) {
+            $totalAmount += (float) ($item['total_price'] ?? 0);
         }
         $order = Order::create([
             'email' => $validated['email'],
-            'items' => $validated['items'],
+            'items' => $items,
             'total_amount' => $totalAmount,
         ]);
 
@@ -54,7 +58,11 @@ final class CreateOrderController
             ],
         ]);
 
-        $emailClient->sendEmailNotification('/internal/orders/receive', $order->id);
+        $emailClient->post('/internal/orders/receive', [
+            'email' => $order->email,
+            'items' => $order->items,
+            'total_amount' => $order->total_amount,
+        ]);
 
         return response()->json($order, 201);
     }

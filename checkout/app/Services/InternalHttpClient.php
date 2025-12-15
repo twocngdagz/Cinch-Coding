@@ -54,42 +54,6 @@ final class InternalHttpClient
         return $result;
     }
 
-    public function sendEmailNotification(string $path, int $orderId): void
-    {
-        $url = $this->buildUrl($path);
-        $data = ['order_id' => $orderId];
-        $body = json_encode($data, JSON_THROW_ON_ERROR);
-        $requestId = RequestContext::getRequestId();
-
-        Log::channel('internal')->info('', [
-            'event' => 'email_notification_request',
-            'request_id' => $requestId,
-            'service' => 'checkout',
-            'endpoint' => $path,
-            'extra' => [
-                'order_id' => $orderId,
-            ],
-        ]);
-
-        $response = $this->createRequest('POST', $path, $body)
-            ->withBody($body, 'application/json')
-            ->post($url);
-
-        $response->throw();
-
-        if ($response->status() === 202) {
-            Log::channel('internal')->info('', [
-                'event' => 'email_notification_acknowledged',
-                'request_id' => $requestId,
-                'service' => 'checkout',
-                'endpoint' => $path,
-                'extra' => [
-                    'order_id' => $orderId,
-                ],
-            ]);
-        }
-    }
-
     private function buildUrl(string $path, array $query = []): string
     {
         $url = $this->baseUrl.'/'.ltrim($path, '/');

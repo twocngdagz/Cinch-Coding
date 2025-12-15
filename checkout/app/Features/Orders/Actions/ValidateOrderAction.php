@@ -28,13 +28,14 @@ final class ValidateOrderAction
         $items = $request->validated('items');
 
         /** @var array<string, mixed> $response */
-        $response = $this->catalogClient->post('/internal/products/validate', [
+        $response = $this->catalogClient->post('/internal/v1/products/validate-items', [
             'items' => $items,
         ]);
 
         return [
             'email' => $request->validated('email'),
             'items' => $response['items'] ?? [],
+            'total_amount' => $response['total_amount'] ?? 0,
         ];
     }
 }
