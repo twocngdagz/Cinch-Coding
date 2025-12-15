@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return response()->json([
-        'service' => 'checkout',
+        'service' => 'email',
         'status' => 'ok',
     ]);
 });

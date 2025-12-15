@@ -7,8 +7,6 @@ COPY tsconfig.json ./
 COPY tsconfig.app.json ./
 COPY tsconfig.node.json ./
 COPY vite.config.ts ./
-COPY tailwind.config.js ./
-COPY postcss.config.js ./
 COPY public ./public
 COPY src ./src
 RUN npm run build

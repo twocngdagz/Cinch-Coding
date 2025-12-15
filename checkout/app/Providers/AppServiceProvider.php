@@ -16,13 +16,13 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->when(ValidateOrderAction::class)
             ->needs(InternalHttpClient::class)
-            ->give(function () {{
+            ->give(function () {
                 return new InternalHttpClient(
                     baseUrl: (string) config('internal-services.services.catalog.base_url'),
                     secret: (string) config('internal-services.secret'),
                     serviceId: (string) config('internal-services.service_id')
                 );
-            }});
+            });
 
         $this->app->when(CreateOrderController::class)
             ->needs(InternalHttpClient::class)
