@@ -14,10 +14,12 @@ use Illuminate\Support\Facades\Log;
 
 final class CreateOrderController
 {
+    public function __construct(
+        private readonly InternalHttpClient $emailClient
+    ) {}
     public function __invoke(
         ValidateOrderRequest $request,
-        ValidateOrderAction $action,
-        InternalHttpClient $emailClient
+        ValidateOrderAction $action
     ): JsonResponse {
         $requestId = RequestContext::getRequestId();
 
@@ -58,7 +60,7 @@ final class CreateOrderController
             ],
         ]);
 
-        $emailClient->post('/internal/orders/receive', [
+        $this->emailClient->post('/internal/orders/receive', [
             'email' => $order->email,
             'items' => $order->items,
             'total_amount' => $order->total_amount,
