@@ -137,3 +137,32 @@ test('get product data returns 404 for non-existent product', function () {
 
     $response->assertStatus(404);
 });
+
+test('validate-items returns priced line items and total_amount', function () {
+    $product = ProductFactory::new()->create();
+    $variant = VariantFactory::new()->create([
+        'product_id' => $product->id,
+        'price' => 10.00,
+        'stock' => 50,
+    ]);
+
+    $payload = [
+        'items' => [
+            ['product_id' => $product->id, 'variant_id' => $variant->id, 'quantity' => 3],
+        ],
+    ];
+
+    $body = json_encode($payload);
+    $headers = generateHmacHeaders('POST', '/internal/v1/products/validate-items', $body);
+
+    $response = $this->withHeaders($headers)
+        ->postJson('/internal/v1/products/validate-items', $payload);
+
+    $response->assertOk()
+        ->assertJsonPath('items.0.product_id', $product->id)
+        ->assertJsonPath('items.0.variant_id', $variant->id)
+        ->assertJsonPath('items.0.quantity', 3)
+        ->assertJsonPath('items.0.unit_price', 10)
+        ->assertJsonPath('items.0.total_price', 30)
+        ->assertJsonPath('total_amount', 30);
+});
