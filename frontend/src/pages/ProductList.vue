@@ -64,7 +64,7 @@ function getPrice(product: Product): string {
 
 onMounted(async () => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_CATALOG_URL}/products`);
+    const res = await fetch(`${import.meta.env.VITE_API_BASE}/products`);
     if (!res.ok) throw new Error("Failed to fetch products");
     const json = await res.json();
     products.value = json.data;

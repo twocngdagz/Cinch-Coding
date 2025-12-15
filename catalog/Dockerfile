@@ -25,7 +25,7 @@ WORKDIR /var/www/catalog
 COPY . .
 
 RUN composer install --no-dev --prefer-dist --optimize-autoloader
-RUN php artisan config:clear && php artisan config:cache
+RUN php artisan config:clear
 
 FROM php:8.3-fpm-bullseye AS runtime
 

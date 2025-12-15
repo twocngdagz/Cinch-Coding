@@ -9,6 +9,10 @@ COPY tsconfig.node.json ./
 COPY vite.config.ts ./
 COPY public ./public
 COPY src ./src
+ARG VITE_CATALOG_URL
+ARG VITE_CHECKOUT_URL
+ENV VITE_CATALOG_URL=$VITE_CATALOG_URL
+ENV VITE_CHECKOUT_URL=$VITE_CHECKOUT_URL
 RUN npm run build
 
 FROM nginx:alpine

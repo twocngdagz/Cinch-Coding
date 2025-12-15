@@ -71,7 +71,7 @@ function add() {
 
 onMounted(async () => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_CATALOG_URL}/products/${route.params.id}`)
+    const res = await fetch(`${import.meta.env.VITE_API_BASE}/products/${route.params.id}`)
     if (!res.ok) throw new Error('Product not found')
     product.value = await res.json()
     updateOptions()

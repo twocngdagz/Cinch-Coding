@@ -1,11 +1,16 @@
-version: "3.9"
-
 services:
   catalog:
     build:
       context: ./catalog
       dockerfile: Dockerfile
     container_name: catalog_service
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: catalog_db
+      DB_PORT: 3306
+      DB_DATABASE: cinch_catalog
+      DB_USERNAME: root
+      DB_PASSWORD: root
     volumes:
       - ./catalog:/var/www/catalog
     ports:
@@ -13,13 +18,21 @@ services:
     networks:
       - cinch
     depends_on:
-      - catalog_db
+      catalog_db:
+        condition: service_healthy
 
   checkout:
     build:
       context: ./checkout
       dockerfile: Dockerfile
     container_name: checkout_service
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: checkout_db
+      DB_PORT: 3306
+      DB_DATABASE: cinch_checkout
+      DB_USERNAME: root
+      DB_PASSWORD: root
     volumes:
       - ./checkout:/var/www/checkout
     ports:
@@ -27,14 +40,26 @@ services:
     networks:
       - cinch
     depends_on:
-      - checkout_db
-      - catalog
+      checkout_db:
+        condition: service_healthy
+      catalog:
+        condition: service_started
 
   email:
     build:
       context: ./email
       dockerfile: Dockerfile
     container_name: email_service
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: email_db
+      DB_PORT: 3306
+      DB_DATABASE: cinch_email
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
     volumes:
       - ./email:/var/www/email
     ports:
@@ -42,16 +67,15 @@ services:
     networks:
       - cinch
     depends_on:
-      - email_db
+      email_db:
+        condition: service_healthy
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
     container_name: frontend
     ports:
       - "8000:80"
-    environment:
-      VITE_CATALOG_URL: http://catalog:8000/api
-      VITE_CHECKOUT_URL: http://checkout:8000/api
     depends_on:
       - catalog
       - checkout
@@ -66,6 +90,11 @@ services:
       MYSQL_DATABASE: cinch_catalog
     ports:
       - "3307:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     networks:
       - cinch
 
@@ -77,6 +106,11 @@ services:
       MYSQL_DATABASE: cinch_checkout
     ports:
       - "3308:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     networks:
       - cinch
 
@@ -88,6 +122,11 @@ services:
       MYSQL_DATABASE: cinch_email
     ports:
       - "3309:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     networks:
       - cinch
 
@@ -96,6 +135,7 @@ services:
     container_name: mailhog
     ports:
       - "8025:8025"
+      - "1025:1025"
     networks:
       - cinch
 networks:
