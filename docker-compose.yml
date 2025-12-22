@@ -15,6 +15,18 @@ services:
       - ./catalog:/var/www/catalog
     ports:
       - "8001:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "php",
+          "-r",
+          "$$fp=@fsockopen('127.0.0.1',8000,$$e,$$s,2);if(!$$fp){exit(1);}fwrite($$fp,\"GET /up HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\");$$resp=stream_get_contents($$fp);fclose($$fp);exit(strpos($$resp,\"200\")===false);",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
     networks:
       - cinch
     depends_on:
@@ -37,6 +49,18 @@ services:
       - ./checkout:/var/www/checkout
     ports:
       - "8002:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "php",
+          "-r",
+          "$$fp=@fsockopen('127.0.0.1',8000,$$e,$$s,2);if(!$$fp){exit(1);}fwrite($$fp,\"GET /up HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\");$$resp=stream_get_contents($$fp);fclose($$fp);exit(strpos($$resp,\"200\")===false);",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
     networks:
       - cinch
     depends_on:
@@ -64,6 +88,18 @@ services:
       - ./email:/var/www/email
     ports:
       - "8003:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "php",
+          "-r",
+          "$$fp=@fsockopen('127.0.0.1',8000,$$e,$$s,2);if(!$$fp){exit(1);}fwrite($$fp,\"GET /up HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\");$$resp=stream_get_contents($$fp);fclose($$fp);exit(strpos($$resp,\"200\")===false);",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
     networks:
       - cinch
     depends_on:

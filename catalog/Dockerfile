@@ -63,6 +63,6 @@ RUN chmod +x /startup.sh
 EXPOSE 8000
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8000/ || exit 1
+  CMD php -r "$fp=@fsockopen('127.0.0.1',8000,$e,$s,2);if(!$fp){exit(1);}fwrite($fp,\"GET /up HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\");$resp=stream_get_contents($fp);fclose($fp);exit(strpos($resp,\"HTTP/1.1 200\")===false);"
 
 ENTRYPOINT ["/startup.sh"]
